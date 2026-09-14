@@ -23,7 +23,7 @@ resolve_go_bin() {
     command -v go
     return 0
   fi
-  if [[ -x /usr/bin/go ]]; then
+  if command -v go >/dev/null 2>&1; then
     printf '%s\n' /usr/bin/go
     return 0
   fi

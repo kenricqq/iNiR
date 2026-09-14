@@ -167,12 +167,9 @@ pkgs.stdenvNoCC.mkDerivation {
     chmod +x "$runtime/setup" "$runtime/scripts/inir"
     find "$runtime/scripts" -type f \( -name '*.sh' -o -name '*.fish' -o -name '*.py' \) -exec chmod +x {} \;
 
-    # The source tree intentionally targets Arch, where helpers live under
-    # /usr/bin. NixOS does not provide that layout. Patch only the packaged
-    # copy and keep shebang lines intact.
-    find "$runtime/modules" "$runtime/services" "$runtime/defaults" "$runtime/scripts" \
-      -type f \( -name '*.qml' -o -name '*.js' -o -name '*.sh' -o -name '*.py' \) \
-      -exec sed -i '1!s#/usr/bin/##g' {} +
+    # The source tree targets Arch's /usr/bin layout. Rewrite executable
+    # references in the staged copy while preserving script shebangs.
+    python3 ${./rewrite-runtime-paths.py} "$runtime"
 
     makeWrapper "$runtime/scripts/inir" "$out/bin/inir" \
       --prefix PATH : "${lib.makeBinPath runtimeDeps}" \

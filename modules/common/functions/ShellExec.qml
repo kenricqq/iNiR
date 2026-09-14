@@ -20,7 +20,7 @@ Singleton {
 
     Process {
         id: fishCheckProc
-        command: ["/usr/bin/test", "-x", root.fishPath]
+        command: [root.bashPath, "-c", "command -v \"$1\" >/dev/null 2>&1", "inir-fish-check", root.fishPath]
         onExited: (exitCode, exitStatus) => {
             root._fishAvailable = (exitCode === 0) ? 1 : 0
         }
@@ -57,11 +57,11 @@ Singleton {
             # session. Quickshell intentionally carries shell-only Qt scaling,
             # rendering and optional GPU policy that must not leak into apps.
             manager_env=""
-            if [ -x /usr/bin/systemctl ]; then
-                if [ -x /usr/bin/timeout ]; then
-                    manager_env="$(/usr/bin/timeout 1s /usr/bin/systemctl --user show-environment 2>/dev/null || true)"
+            if command -v systemctl >/dev/null 2>&1; then
+                if command -v timeout >/dev/null 2>&1; then
+                    manager_env="$(timeout 1s systemctl --user show-environment 2>/dev/null || true)"
                 else
-                    manager_env="$(/usr/bin/systemctl --user show-environment 2>/dev/null || true)"
+                    manager_env="$(systemctl --user show-environment 2>/dev/null || true)"
                 fi
             fi
 
@@ -165,7 +165,7 @@ Singleton {
                 cd -- "$workdir" || true
             fi
 
-            if [ -x "$systemd_run" ] && [ -S "$XDG_RUNTIME_DIR/systemd/private" ]; then
+            if command -v "$systemd_run" >/dev/null 2>&1 && [ -S "$XDG_RUNTIME_DIR/systemd/private" ]; then
                 if [ -n "$desc" ]; then
                     exec "$systemd_run" --user --quiet --collect --same-dir --scope \
                         --description="$desc" -- "$@"
