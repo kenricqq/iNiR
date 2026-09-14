@@ -966,7 +966,8 @@ config_qml="$runtime_root/modules/common/Config.qml"
 if ! grep -Fq 'property var _pendingMutations: ({})' "$config_qml" \
         || ! grep -Fq 'property bool _rebasingExternalChange: false' "$config_qml" \
         || ! grep -Fq 'root._reapplyPendingMutations();' "$config_qml" \
-        || ! sed -n '/function flushWrites()/,/^    }/p' "$config_qml" | grep -Fq 'root._pendingMutations = ({})' \
+        || ! sed -n '/function flushWrites()/,/^    }/p' "$config_qml" | grep -Fq 'root._beginMutationFlight();' \
+        || ! grep -Fq 'ConfigPersistence.restoreFailedMutations' "$config_qml" \
         || ! grep -Fq 'fileWriteTimer.running || Object.keys(root._pendingMutations ?? {}).length > 0' "$config_qml"; then
     printf 'FAIL: cross-process Config writes can regress to stale full-file mirror overwrites\n' >&2
     exit 1
@@ -1425,5 +1426,6 @@ fi
 step "installed payload boundaries"
 python3 "$runtime_root/scripts/test-runtime-payload.py"
 python3 "$runtime_root/scripts/test-custom-widget-files.py"
+python3 "$runtime_root/scripts/test-config-persistence.py"
 
 printf '\nAll local distribution checks passed.\n'

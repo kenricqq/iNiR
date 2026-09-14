@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "ConfigPersistence.js" as ConfigPersistence
 
 Singleton {
     id: root
@@ -32,12 +33,13 @@ Singleton {
     function flushWrites(): void {
         fileWriteTimer.stop();
         fileReloadTimer.stop();
+        if (root._writeInFlight) {
+            root._pendingWrite = true;
+            return;
+        }
         root._prepareCustomInject();
         root._writeInFlight = true;
-        // These mutations are being committed right now. Leaving them in the
-        // pending journal makes a later external config change replay an old
-        // already-saved value (e.g. App Filters toggling itself back on).
-        root._pendingMutations = ({});
+        root._beginMutationFlight();
         root._writeRetries = 0;
         root._writeMirrorToDisk();
         writeFlightGuard.restart();
@@ -59,17 +61,7 @@ Singleton {
             return;
         }
 
-        let convertedValue = value;
-        if (typeof value === "string") {
-            let trimmed = value.trim();
-            if (trimmed === "true" || trimmed === "false" || !isNaN(Number(trimmed))) {
-                try {
-                    convertedValue = JSON.parse(trimmed);
-                } catch (e) {
-                    convertedValue = value;
-                }
-            }
-        }
+        const convertedValue = ConfigPersistence.normalize(value);
 
         // Route custom widget paths to standalone property (outside adapter)
         if (keys.length >= 3 && keys[0] === "background" && keys[1] === "widgets" && keys[2] === "custom") {
@@ -167,9 +159,10 @@ Singleton {
     }
 
     function setNestedValue(nestedKey, value) {
-        _applyNestedKey(nestedKey, value);
-        _applyToMirror(nestedKey, value);
-        _recordPendingMutation(nestedKey, value);
+        const normalized = ConfigPersistence.normalize(value);
+        _applyNestedKey(nestedKey, normalized);
+        _applyToMirror(nestedKey, normalized);
+        _recordPendingMutation(nestedKey, normalized);
         fileWriteTimer.restart();
         root._bumpRevision();
         root.configChanged();
@@ -182,9 +175,10 @@ Singleton {
             return;
         const paths = Object.keys(updates);
         for (let i = 0; i < paths.length; ++i) {
-            _applyNestedKey(paths[i], updates[paths[i]]);
-            _applyToMirror(paths[i], updates[paths[i]]);
-            _recordPendingMutation(paths[i], updates[paths[i]]);
+            const normalized = ConfigPersistence.normalize(updates[paths[i]]);
+            _applyNestedKey(paths[i], normalized);
+            _applyToMirror(paths[i], normalized);
+            _recordPendingMutation(paths[i], normalized);
         }
         if (paths.length > 0) {
             fileWriteTimer.restart();
@@ -366,20 +360,39 @@ Singleton {
     property bool _pendingMascotInject: false
     property bool _pendingReload: false
     property int _writeRetries: 0
+    property var _inFlightMutations: ({})
+    property string lastWriteError: ""
+
+    function _beginMutationFlight(): void {
+        const flight = ConfigPersistence.beginMutationFlight(root._pendingMutations);
+        root._pendingMutations = flight.pending;
+        root._inFlightMutations = flight.inFlight;
+    }
 
     // Every write must exit through here; a stuck _writeInFlight freezes all persistence.
     function _endWriteFlight(reason: string): void {
         writeFlightGuard.stop();
         root._writeInFlight = false;
         root._writeRetries = 0;
-        if (reason.length > 0)
+        if (reason.length > 0) {
+            root.lastWriteError = reason;
+            root._pendingMutations = ConfigPersistence.restoreFailedMutations(
+                root._inFlightMutations, root._pendingMutations);
+            root._inFlightMutations = ({});
+            root._pendingCustomInject = false;
+            root._pendingMascotInject = false;
+            root._pendingWrite = false;
             console.warn("[Config] write flight released:", reason);
+            return;
+        }
+        root.lastWriteError = "";
         if (root._pendingCustomInject || root._pendingMascotInject) {
             root._pendingCustomInject = false;
             root._pendingMascotInject = false;
             customInjectTimer.restart();
             return;
         }
+        root._inFlightMutations = ({});
         if (root._pendingWrite) {
             root._pendingWrite = false;
             fileWriteTimer.restart();
@@ -398,56 +411,49 @@ Singleton {
     property var _jsonMirror: ({})
 
     function _cloneObject(obj: var): var {
-        try {
-            return JSON.parse(JSON.stringify(obj ?? {}));
-        } catch (e) {
-            return {};
-        }
+        return ConfigPersistence.cloneObject(obj);
     }
 
     function _hasObjectKeys(obj: var): bool {
-        return obj && typeof obj === "object" && Object.keys(obj).length > 0;
+        return ConfigPersistence.hasObjectKeys(obj);
     }
 
     function _customDataForWrite(): var {
-        if (root._hasObjectKeys(root.customWidgetData))
-            return root._cloneObject(root.customWidgetData);
+        let fallback = {};
         try {
             const current = JSON.parse(configFileView.text());
             const currentCustom = current?.background?.widgets?.custom ?? {};
             if (root._hasObjectKeys(currentCustom))
-                return root._cloneObject(currentCustom);
+                fallback = currentCustom;
         } catch (e) {}
-        try {
+        if (!root._hasObjectKeys(fallback)) try {
             rawConfigReader.reload();
             const raw = JSON.parse(rawConfigReader.text());
             const diskCustom = raw?.background?.widgets?.custom ?? {};
             if (root._hasObjectKeys(diskCustom))
-                return root._cloneObject(diskCustom);
+                fallback = diskCustom;
         } catch (e) {}
-        return {};
+        return ConfigPersistence.dynamicData(
+            root.customWidgetData, root.customWidgetDataSynced, fallback);
     }
 
     function _mascotInstancesDataForWrite(): var {
-        // Once synced from disk this session, in-memory is authoritative —
-        // an intentionally-emptied bucket (user deleted their last instance)
-        // must NOT be resurrected from a stale on-disk snapshot below.
-        if (root._hasObjectKeys(root.mascotInstances) || root.mascotInstancesSynced)
-            return root._cloneObject(root.mascotInstances);
+        let fallback = {};
         try {
             const current = JSON.parse(configFileView.text());
             const currentMascot = current?.background?.widgets?.mascotInstances ?? {};
             if (root._hasObjectKeys(currentMascot))
-                return root._cloneObject(currentMascot);
+                fallback = currentMascot;
         } catch (e) {}
-        try {
+        if (!root._hasObjectKeys(fallback)) try {
             rawConfigReader.reload();
             const raw = JSON.parse(rawConfigReader.text());
             const diskMascot = raw?.background?.widgets?.mascotInstances ?? {};
             if (root._hasObjectKeys(diskMascot))
-                return root._cloneObject(diskMascot);
+                fallback = diskMascot;
         } catch (e) {}
-        return {};
+        return ConfigPersistence.dynamicData(
+            root.mascotInstances, root.mascotInstancesSynced, fallback);
     }
 
     function _prepareCustomInject(): void {
@@ -465,18 +471,14 @@ Singleton {
     // Fallback: write the mirror directly when writeAdapter() doesn't emit onSaved.
     function _writeMirrorToDisk(): void {
         try {
-            let obj = root._jsonMirror;
+            const obj = ConfigPersistence.withDynamicBuckets(
+                root._jsonMirror,
+                root.customWidgetData,
+                root.customWidgetDataSynced,
+                root.mascotInstances,
+                root.mascotInstancesSynced);
             if (!obj || Object.keys(obj).length === 0) return;
-            if (root._hasObjectKeys(root.customWidgetData)) {
-                if (!obj.background) obj.background = {};
-                if (!obj.background.widgets) obj.background.widgets = {};
-                obj.background.widgets.custom = root.customWidgetData;
-            }
-            if (root._hasObjectKeys(root.mascotInstances)) {
-                if (!obj.background) obj.background = {};
-                if (!obj.background.widgets) obj.background.widgets = {};
-                obj.background.widgets.mascotInstances = root.mascotInstances;
-            }
+            root._jsonMirror = obj;
             configFileView.setText(JSON.stringify(obj, null, 4));
         } catch (e) {
             console.warn("[Config] mirror write failed:", e.message);
@@ -540,7 +542,7 @@ Singleton {
             root._prepareCustomInject();
             root._pendingWrite = false;
             root._writeInFlight = true;
-            root._pendingMutations = ({});
+            root._beginMutationFlight();
             root._writeRetries = 0;
             fileReloadTimer.stop();
             // Try writeAdapter first — it properly emits QObject property signals

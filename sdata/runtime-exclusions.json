@@ -95,6 +95,8 @@
     "scripts/test-mascot-pack-flow.sh",
     "scripts/test-runtime-payload.py",
     "scripts/test-custom-widget-files.py",
+    "scripts/test-config-persistence.py",
+    "scripts/config/tests",
     "scripts/orbit-visual-audit.sh",
     "scripts/lib/generate-ipc-registry.py",
     "scripts/quickshell-webengine",
