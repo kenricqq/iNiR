@@ -1429,5 +1429,6 @@ python3 "$runtime_root/scripts/test-custom-widget-files.py"
 python3 "$runtime_root/scripts/test-config-persistence.py"
 python3 "$runtime_root/scripts/test-nix-runtime-paths.py"
 python3 "$runtime_root/scripts/test-resource-usage.py"
+python3 "$runtime_root/scripts/test-dank-socket.py"
 
 printf '\nAll local distribution checks passed.\n'

@@ -71,7 +71,7 @@ Singleton {
     DankSocket {
         id: eventStreamSocket
         path: root.socketPath
-        connected: CompositorService.isNiri
+        enabled: CompositorService.isNiri
 
         onConnectionStateChanged: {
             if (connected) {
@@ -96,7 +96,7 @@ Singleton {
     DankSocket {
         id: requestSocket
         path: root.socketPath
-        connected: CompositorService.isNiri
+        enabled: CompositorService.isNiri
     }
 
     Process {
@@ -800,8 +800,7 @@ Singleton {
     function send(request) {
         if (!CompositorService.isNiri || !requestSocket.connected)
             return false
-        requestSocket.send(request)
-        return true
+        return requestSocket.send(request)
     }
 
     function toggleOverview() {
