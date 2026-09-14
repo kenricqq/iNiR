@@ -15,16 +15,7 @@ DashCard {
     title: Translation.tr("System")
     icon: "monitor_heart"
 
-    // keepAlive while shown so values keep updating past the 15s auto-stop;
-    // always released on hide/destroy. _holding guards against double counts.
-    property bool _holding: false
-    function _syncPolling() {
-        if (visible && !_holding) { _holding = true; ResourceUsage.keepAlive() }
-        else if (!visible && _holding) { _holding = false; ResourceUsage.releaseKeepAlive() }
-    }
-    onVisibleChanged: _syncPolling()
-    Component.onCompleted: _syncPolling()
-    Component.onDestruction: if (_holding) { _holding = false; ResourceUsage.releaseKeepAlive() }
+    ResourceUsageLease { active: root.visible }
 
     component UsageRow: ColumnLayout {
         id: usageRow

@@ -50,6 +50,7 @@ singleton PowerProfilePersistence 1.0 PowerProfilePersistence.qml
 singleton Privacy 1.0 Privacy.qml
 singleton RecorderStatus 1.0 RecorderStatus.qml
 singleton ResourceUsage 1.0 ResourceUsage.qml
+ResourceUsageLease 1.0 ResourceUsageLease.qml
 singleton ScreenTime 1.0 ScreenTime.qml
 singleton ShellEditSession 1.0 ShellEditSession.qml
 singleton ShellLayoutController 1.0 ShellLayoutController.qml

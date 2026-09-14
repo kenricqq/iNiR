@@ -158,7 +158,7 @@ Item {
     implicitWidth: dashContainer.implicitWidth + Appearance.sizes.elevationMargin * 2
     implicitHeight: dashContainer.implicitHeight + Appearance.sizes.elevationMargin * 2
 
-    Component.onCompleted: ResourceUsage.ensureRunning()
+    ResourceUsageLease { active: root.visible && root.panelVisible }
 
     Timer {
         running: root.effectiveIsPlaying

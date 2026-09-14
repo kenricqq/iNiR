@@ -54,10 +54,9 @@ Singleton {
     }
 
     onOpenChanged: {
-        if (open) { ResourceUsage.keepAlive(); primeAll(); }
-        else ResourceUsage.releaseKeepAlive();
+        if (open) primeAll();
     }
-    Component.onDestruction: { if (open) ResourceUsage.releaseKeepAlive(); }
+    ResourceUsageLease { active: root.open }
 
     function fmtUptime(sec) {
         var d = Math.floor(sec / 86400);

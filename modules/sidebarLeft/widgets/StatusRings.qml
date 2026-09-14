@@ -11,8 +11,7 @@ Item {
     id: root
     implicitHeight: 64
 
-    Component.onCompleted: ResourceUsage.ensureRunning()
-    onVisibleChanged: if (visible) ResourceUsage.ensureRunning()
+    ResourceUsageLease { active: root.visible }
 
     RowLayout {
         anchors.fill: parent

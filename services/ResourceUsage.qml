@@ -13,6 +13,7 @@ Singleton {
     id: root
 
     property bool _runningRequested: false
+    readonly property bool running: _runningRequested
     property bool _initRequested: false
     property int _persistentConsumers: 0
 
@@ -240,8 +241,6 @@ Singleton {
     }
 
     function _pollSensors(): void {
-        autoStopTimer.restart();
-
         fileMeminfo.reload();
         fileStat.reload();
         if (root._cpuTempPath !== "") { fileCpuTemp.reload(); fileCpuTemp.text(); }

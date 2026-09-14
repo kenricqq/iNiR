@@ -13,7 +13,7 @@ Item {
     id: root
     property int margin: 10
 
-    Component.onCompleted: ResourceUsage.ensureRunning()
+    ResourceUsageLease { active: root.visible }
 
     // Style tokens
     readonly property color colText: Appearance.angelEverywhere ? Appearance.angel.colText
