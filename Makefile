@@ -7,7 +7,7 @@ SHELL_INSTALL_DIR = $(SHAREDIR)/quickshell/inir
 DOC_DIR = $(SHAREDIR)/doc/inir-shell
 SYSTEMD_USER_DIR ?= $(PREFIX)/lib/systemd/user
 
-.PHONY: all build test-local install install-bin install-shell install-systemd install-icon install-desktop install-docs uninstall uninstall-bin uninstall-shell uninstall-systemd uninstall-icon uninstall-desktop uninstall-docs
+.PHONY: all build test-local test-localsend install install-bin install-shell install-systemd install-icon install-desktop install-docs uninstall uninstall-bin uninstall-shell uninstall-systemd uninstall-icon uninstall-desktop uninstall-docs
 
 all: build
 
@@ -19,6 +19,10 @@ build:
 
 test-local: build
 	@bash scripts/test-local-distribution.sh
+
+test-localsend:
+	@python3 -m unittest discover -s scripts/localsend/tests -v
+	@python3 scripts/localsend/tests/run-qml-tests.py
 
 install-bin:
 	@install -Dm755 scripts/inir $(BINDIR)/inir

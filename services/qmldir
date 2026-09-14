@@ -1,4 +1,5 @@
 module qs.services
+singleton LocalSend 1.0 LocalSend.qml
 singleton AwwwBackend 1.0 AwwwBackend.qml
 singleton Ai 1.0 Ai.qml
 singleton AppCatalog 1.0 AppCatalog.qml

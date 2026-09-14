@@ -499,6 +499,7 @@ DEBIAN_CORE_PKGS=(
   ripgrep
   jq
   xdg-user-dirs
+  openssl
   rsync
   git
   wl-clipboard

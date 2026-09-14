@@ -8,6 +8,7 @@ import QtQuick.Layouts
 import Quickshell
 
 import qs.modules.sidebarRight.quickToggles.classicStyle
+import qs.modules.sidebarRight.localsend
 
 AbstractQuickPanel {
     id: root
@@ -15,8 +16,15 @@ AbstractQuickPanel {
     property int compactItemSlotWidth: 48
     property int compactSpacing: 8
     
-    implicitHeight: grid.implicitHeight
+    implicitHeight: grid.implicitHeight + sharingControl.implicitHeight + 8
     Layout.fillWidth: true
+
+    LocalSendControl {
+        id: sharingControl
+        anchors.top: grid.bottom
+        anchors.topMargin: 8
+        width: parent.width
+    }
 
     Grid {
         id: grid

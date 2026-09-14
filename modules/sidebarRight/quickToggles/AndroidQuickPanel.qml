@@ -8,6 +8,7 @@ import Quickshell
 import Quickshell.Bluetooth
 
 import qs.modules.sidebarRight.quickToggles.androidStyle
+import qs.modules.sidebarRight.localsend
 
 AbstractQuickPanel {
     id: root
@@ -66,6 +67,8 @@ AbstractQuickPanel {
             margins: root.padding
         }
         spacing: 12
+
+        LocalSendControl { width: parent.width }
         
         ScrollView {
             id: scrollView

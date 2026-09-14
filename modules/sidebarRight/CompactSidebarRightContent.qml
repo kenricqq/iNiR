@@ -28,6 +28,7 @@ import QtQuick.Effects
 import Qt5Compat.GraphicalEffects as GE
 
 import qs.modules.sidebarRight.quickToggles
+import qs.modules.sidebarRight.localsend
 import qs.modules.sidebarRight.quickToggles.classicStyle
 import qs.modules.sidebarRight.bluetoothDevices
 import qs.modules.sidebarRight.nightLight
@@ -1843,6 +1844,8 @@ Item {
     // ═════════════════════════════════════════════════════════════
     // INLINE COMPONENTS
     // ═════════════════════════════════════════════════════════════
+
+    LocalSendOverlay {}
 
     component ToggleDialog: Loader {
         id: tdLoader

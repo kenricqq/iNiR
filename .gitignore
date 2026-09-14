@@ -152,6 +152,7 @@ cookies.txt
 # ── Temporary dev scripts ─────────────────────────────────────
 replace_yt_card.py
 test_*.py
+!scripts/localsend/tests/test_*.py
 debug_*.py
 
 # ── OS generated ──────────────────────────────────────────────

@@ -25,6 +25,7 @@ import qs.modules.sidebarRight.hotspot
 import qs.modules.sidebarRight.nightLight
 import qs.modules.sidebarRight.volumeMixer
 import qs.modules.sidebarRight.wifiNetworks
+import qs.modules.sidebarRight.localsend
 
 Item {
     id: root
@@ -69,7 +70,7 @@ Item {
 
     readonly property bool anyDialogOpen: showAudioOutputDialog || showAudioInputDialog
         || showBluetoothDialog || showEventsDialog || showHotspotDialog
-        || showNightLightDialog || showWifiDialog || root.detailOpen
+        || showNightLightDialog || showWifiDialog || root.detailOpen || LocalSend.panelOpen
     // Collapse the notification zone (and the panel around it) when there is
     // nothing to show. Dialogs re-expand so they keep their full canvas.
     readonly property bool notifsCollapsed: (Config.options?.sidebar?.collapseEmptyNotifications ?? false)
@@ -1050,6 +1051,8 @@ Item {
             isSink: true
         }
     }
+
+    LocalSendOverlay {}
 
     ToggleDialog {
         shownPropertyString: "showAudioInputDialog"

@@ -1,0 +1,4 @@
+module qs.modules.sidebarRight.localsend
+LocalSendControl 1.0 LocalSendControl.qml
+LocalSendDialog 1.0 LocalSendDialog.qml
+LocalSendOverlay 1.0 LocalSendOverlay.qml

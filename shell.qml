@@ -32,6 +32,7 @@ ShellRoot {
 
     // Force singleton instantiation — startup-critical only
     property var _idleService: Idle
+    property var _localSendService: LocalSend
     property var _powerProfilePersistence: PowerProfilePersistence
     property var _devNavigationService: DevNavigation
     property var _shellEditSessionService: ShellEditSession

@@ -26,6 +26,7 @@ depends=(
   playerctl
   polkit-gnome
   python
+  openssl
   qt6-5compat
   qt6-imageformats
   qt6-multimedia

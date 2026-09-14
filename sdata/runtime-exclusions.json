@@ -85,6 +85,7 @@
     ".bak"
   ],
   "excludedPaths": [
+    "scripts/localsend/tests",
     "scripts/agents",
     "scripts/release.sh",
     "scripts/wiki-sync.sh",

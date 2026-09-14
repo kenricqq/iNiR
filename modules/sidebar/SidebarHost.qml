@@ -50,8 +50,9 @@ Scope {
     readonly property int edgeOpenWidth: Math.max(1,
         Config.options?.sidebar?.edgeOpen?.regionWidth ?? 2)
     property bool edgeRevealTransient: false
-    readonly property bool roleHoldOpen: root.featureRole
-        && GlobalStates.sidebarLeftHoldOpen
+    readonly property bool roleHoldOpen: (root.featureRole
+        && GlobalStates.sidebarLeftHoldOpen)
+        || (root.systemRole && LocalSend.selectingFiles)
     readonly property bool roleExpanded: root.featureRole
         && GlobalStates.sidebarLeftExpanded
     readonly property var roleLayoutState: ShellLayoutController.currentState(

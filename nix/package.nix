@@ -38,6 +38,7 @@ let
       gnugrep
       gnused
       jq
+      openssl
       procps
       pythonRuntime
       ripgrep
