@@ -5636,7 +5636,7 @@ ContentPage {
                         height: 40
                         placeholderText: Translation.tr("widget-name (lowercase, dashes)")
                         font.pixelSize: Appearance.font.pixelSize.small
-                        validator: RegularExpressionValidator { regularExpression: /[a-z0-9][a-z0-9\-]*/ }
+                        validator: RegularExpressionValidator { regularExpression: /[a-z][a-z0-9]*(?:-[a-z0-9]+)*/ }
                         onAccepted: {
                             if (text.length > 0) {
                                 CustomWidgets.create(text);
@@ -5651,7 +5651,7 @@ ContentPage {
                         leftmost: true; rightmost: true
                         buttonIcon: "add"
                         buttonText: Translation.tr("Create")
-                        enabled: _newWidgetNameField.text.length > 0
+                        enabled: CustomWidgets.validWidgetId(_newWidgetNameField.text)
                         opacity: enabled ? 1 : 0.4
                         onClicked: {
                             if (_newWidgetNameField.text.length > 0) {
@@ -5670,6 +5670,13 @@ ContentPage {
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     wrapMode: Text.WordWrap
                 }
+            }
+
+            NoticeBox {
+                visible: CustomWidgets.lastError.length > 0
+                Layout.fillWidth: true
+                materialIcon: "error"
+                text: CustomWidgets.lastError
             }
 
             // Empty state

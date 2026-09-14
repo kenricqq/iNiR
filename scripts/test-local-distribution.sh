@@ -1424,5 +1424,6 @@ fi
 
 step "installed payload boundaries"
 python3 "$runtime_root/scripts/test-runtime-payload.py"
+python3 "$runtime_root/scripts/test-custom-widget-files.py"
 
 printf '\nAll local distribution checks passed.\n'
